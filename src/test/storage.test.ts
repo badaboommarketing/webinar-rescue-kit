@@ -16,6 +16,12 @@ const lead: LeadInfo = {
   name: "Alex Example",
   email: "alex@example.com",
   company: "Example Co",
+  website: "https://example.com",
+  timeline: "1-2-weeks",
+  biggestBlocker: "email-sequence",
+  budgetRange: "1500-3000",
+  wantsHelp: "yes",
+  consent: true,
 };
 
 describe("storage helpers", () => {

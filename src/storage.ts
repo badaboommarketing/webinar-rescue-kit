@@ -1,4 +1,4 @@
-import type { LeadPayload, LeadInfo, WebinarInput } from "./types";
+import type { LeadPayload, LeadInfo, WebinarInput, GeneratedKit } from "./types";
 
 const LEADS_KEY = "wrk_leads";
 const WEBHOOK_KEY = "wrk_webhook_url";
@@ -38,12 +38,18 @@ export function setWebhookUrl(url: string): void {
   }
 }
 
-// ── JSON download ───────────────────────────────────────────────────
+// ── Downloads ───────────────────────────────────────────────────────
 
 export function downloadJson(data: unknown, filename: string): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
+  downloadText(JSON.stringify(data, null, 2), filename, "application/json");
+}
+
+export function downloadText(
+  text: string,
+  filename: string,
+  type = "text/markdown",
+): void {
+  const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -101,6 +107,11 @@ export function buildMailtoLink(lead: LeadInfo, input: WebinarInput): string {
       `Name: ${lead.name}`,
       `Email: ${lead.email}`,
       `Company: ${lead.company}`,
+      `Website: ${lead.website}`,
+      `Timeline: ${lead.timeline}`,
+      `Biggest blocker: ${lead.biggestBlocker}`,
+      `Budget range: ${lead.budgetRange}`,
+      `Interested in help: ${lead.wantsHelp}`,
       ``,
       `Webinar: ${input.title}`,
       `Topic: ${input.topic}`,
@@ -115,13 +126,96 @@ export function buildMailtoLink(lead: LeadInfo, input: WebinarInput): string {
 
 // ── Build payload helper ────────────────────────────────────────────
 
-export function buildPayload(
-  lead: LeadInfo,
-  input: WebinarInput,
-): LeadPayload {
+export function buildPayload(lead: LeadInfo, input: WebinarInput): LeadPayload {
   return {
     lead,
     input,
     generatedAt: new Date().toISOString(),
+    utm: getUtmParams(),
   };
+}
+
+export function getUtmParams(
+  search = typeof window === "undefined" ? "" : window.location.search,
+): Record<string, string> {
+  const params = new URLSearchParams(search);
+  const out: Record<string, string> = {};
+  for (const [key, value] of params.entries()) {
+    if (key.startsWith("utm_") || ["gclid", "fbclid", "msclkid"].includes(key)) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+export function buildMarkdownKit(input: WebinarInput, kit: GeneratedKit): string {
+  const emailBlock = kit.emailSequence
+    .map((email) =>
+      `### ${email.label}\n\nTiming: ${email.sendTiming}\n\nSubject: ${email.subject}\n\nPreheader: ${email.preheader}\n\n\`\`\`\n${email.body}\n\`\`\``,
+    )
+    .join("\n\n");
+  const followUpBlock = kit.postWebinarFollowUp
+    .map((email) =>
+      `### ${email.label}\n\nTiming: ${email.sendTiming}\n\nSubject: ${email.subject}\n\nPreheader: ${email.preheader}\n\n\`\`\`\n${email.body}\n\`\`\``,
+    )
+    .join("\n\n");
+
+  return `# ${input.title} — Webinar Rescue Kit
+
+## Rescue Score
+${kit.rescueScore.score}/100 — ${kit.rescueScore.label}
+
+Recommended offer: ${kit.rescueScore.recommendedOffer}
+
+### Rationale
+${kit.rescueScore.rationale.map((item) => `- ${item}`).join("\n")}
+
+### Next Actions
+${kit.rescueScore.nextActions.map((item) => `- ${item}`).join("\n")}
+
+## Executive Snapshot
+${kit.executiveSnapshot}
+
+## Positioning
+- Angle: ${kit.positioning.angle}
+- Differentiation: ${kit.positioning.differentiation}
+- Value proposition: ${kit.positioning.valueProposition}
+- Audience insight: ${kit.positioning.audienceInsight}
+
+## Registration Page Copy
+Headline: ${kit.landingPage.headline}
+
+Subheadline: ${kit.landingPage.subheadline}
+
+${kit.landingPage.bullets.map((item) => `- ${item}`).join("\n")}
+
+CTA: ${kit.landingPage.ctaButton}
+
+Proof note: ${kit.landingPage.socialProofNote}
+
+Urgency: ${kit.landingPage.urgencyElement}
+
+## Invite / Reminder Sequence
+${emailBlock}
+
+## Post-Webinar Follow-Up
+${followUpBlock}
+
+## Paid Ad Angles
+${kit.adAngles
+  .map(
+    (ad) =>
+      `### ${ad.platform}\n\nHeadline: ${ad.headline}\n\n${ad.body}\n\nCTA: ${ad.cta}\n\nTargeting notes: ${ad.targetingNotes}`,
+  )
+  .join("\n\n")}
+
+## Sales Handoff
+${kit.salesHandoff.map((item) => `- ${item}`).join("\n")}
+
+## Production Checklist
+${kit.productionChecklist.map((item) => `- ${item}`).join("\n")}
+
+## Risk Flags
+${kit.riskFlags.map((item) => `- ${item}`).join("\n")}
+`;
 }

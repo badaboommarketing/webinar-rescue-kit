@@ -51,6 +51,7 @@ export interface Positioning {
 
 export interface GeneratedKit {
   executiveSnapshot: string;
+  rescueScore: RescueScore;
   positioning: Positioning;
   landingPage: LandingPageCopy;
   emailSequence: EmailContent[];
@@ -61,14 +62,29 @@ export interface GeneratedKit {
   riskFlags: string[];
 }
 
+export interface RescueScore {
+  score: number;
+  label: "Emergency Rescue" | "Needs Funnel Build" | "Promotion Ready" | "Launch Ready";
+  recommendedOffer: string;
+  rationale: string[];
+  nextActions: string[];
+}
+
 export interface LeadInfo {
   name: string;
   email: string;
   company: string;
+  website: string;
+  timeline: string;
+  biggestBlocker: string;
+  budgetRange: string;
+  wantsHelp: "yes" | "maybe" | "no";
+  consent: boolean;
 }
 
 export interface LeadPayload {
   lead: LeadInfo;
   input: WebinarInput;
   generatedAt: string;
+  utm: Record<string, string>;
 }

@@ -9,8 +9,11 @@ Built for Bada Digital's Event Lead Growth wedge. The MVP is static-deployable a
 - Loads a realistic sample webinar brief.
 - Accepts custom webinar/event inputs.
 - Generates a structured campaign package instantly in the browser.
+- Calculates a rescue score and recommends the right Bada offer.
 - Saves lead/intake payloads to localStorage.
-- Downloads the generated kit as JSON.
+- Captures UTM/source parameters with the intake payload.
+- Gates export until the intake has usable contact, timeline, blocker, and consent data.
+- Downloads the generated kit as Markdown or JSON.
 - Posts lead payloads to a configurable n8n webhook when supplied.
 - Provides a mailto fallback to Bada Digital.
 - Flags missing proof instead of inventing claims.

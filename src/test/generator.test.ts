@@ -22,6 +22,8 @@ describe("generateKit", () => {
       expect(kit[key]).toBeTruthy();
     }
 
+    expect(kit.rescueScore.score).toBeGreaterThan(0);
+    expect(kit.rescueScore.recommendedOffer).toContain("Event Lead Growth");
     expect(kit.emailSequence).toHaveLength(5);
     expect(kit.postWebinarFollowUp).toHaveLength(3);
     expect(kit.adAngles.length).toBeGreaterThanOrEqual(3);

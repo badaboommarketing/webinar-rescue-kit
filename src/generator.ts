@@ -5,6 +5,7 @@ import type {
   AdAngle,
   Positioning,
   LandingPageCopy,
+  RescueScore,
 } from "./types";
 
 // ── Executive Snapshot ──────────────────────────────────────────────
@@ -422,11 +423,73 @@ function buildRiskFlags(i: WebinarInput): string[] {
   return flags;
 }
 
+// ── Rescue Score ─────────────────────────────────────────────────────
+
+function buildRescueScore(i: WebinarInput, riskFlags: string[]): RescueScore {
+  let score = 100;
+  const rationale: string[] = [];
+
+  const deductions: Array<[boolean, number, string]> = [
+    [!i.uniqueAngle.trim(), 15, "No unique angle makes paid promotion harder."],
+    [!i.speakerCredentials.trim(), 10, "Speaker authority is not established yet."],
+    [!i.dateTime.trim(), 10, "No firm date weakens urgency and reminder planning."],
+    [!i.callToAction.trim(), 15, "No clear CTA means the event has no commercial handoff."],
+    [!i.productService.trim(), 10, "The post-webinar offer is not defined."],
+    [!i.painPoint.trim(), 15, "The core pain point is unclear."],
+    [i.targetAudience.trim().split(" ").length < 5, 10, "The audience definition is still too broad."],
+    [i.mainPromise.trim().split(" ").length < 5, 10, "The promise needs a sharper outcome."],
+  ];
+
+  for (const [condition, points, reason] of deductions) {
+    if (condition) {
+      score -= points;
+      rationale.push(reason);
+    }
+  }
+
+  score = Math.max(0, Math.min(100, score));
+
+  const label: RescueScore["label"] =
+    score < 45
+      ? "Emergency Rescue"
+      : score < 70
+        ? "Needs Funnel Build"
+        : score < 88
+          ? "Promotion Ready"
+          : "Launch Ready";
+
+  const recommendedOffer =
+    label === "Emergency Rescue"
+      ? "Webinar Rescue Sprint — tighten positioning, CTA, registration copy, reminders, and follow-up before traffic is wasted."
+      : label === "Needs Funnel Build"
+        ? "Webinar Funnel Setup Sprint — build the registration page, email sequence, reminder flow, and sales handoff."
+        : label === "Promotion Ready"
+          ? "Webinar Rescue Review — sharpen the kit, confirm proof, and prepare a launch checklist before ads go live."
+          : "Event Lead Growth Launch Package — this is ready for a broader campaign build and paid promotion plan.";
+
+  const nextActions = [
+    riskFlags[0] || "Confirm final event date, CTA, and proof before publishing.",
+    "Build or update the registration page using the generated copy.",
+    "Load the invite, reminder, and follow-up sequences into the email platform before spending on ads.",
+  ];
+
+  return {
+    score,
+    label,
+    recommendedOffer,
+    rationale: rationale.length ? rationale : ["Core funnel inputs are present. Main remaining work is execution quality and proof."],
+    nextActions,
+  };
+}
+
 // ── Main Generator ──────────────────────────────────────────────────
 
 export function generateKit(input: WebinarInput): GeneratedKit {
+  const riskFlags = buildRiskFlags(input);
+
   return {
     executiveSnapshot: buildSnapshot(input),
+    rescueScore: buildRescueScore(input, riskFlags),
     positioning: buildPositioning(input),
     landingPage: buildLandingPage(input),
     emailSequence: buildEmailSequence(input),
@@ -434,6 +497,6 @@ export function generateKit(input: WebinarInput): GeneratedKit {
     adAngles: buildAdAngles(input),
     salesHandoff: buildSalesHandoff(input),
     productionChecklist: buildProductionChecklist(input),
-    riskFlags: buildRiskFlags(input),
+    riskFlags,
   };
 }

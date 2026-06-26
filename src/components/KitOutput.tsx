@@ -24,10 +24,19 @@ function Section({
 }
 
 function CopyBlock({ text }: { text: string }) {
+  async function copy() {
+    await navigator.clipboard.writeText(text);
+  }
+
   return (
-    <pre className="copy-block">
-      <code>{text}</code>
-    </pre>
+    <div className="copy-wrap">
+      <button type="button" className="btn-copy" onClick={copy}>
+        Copy
+      </button>
+      <pre className="copy-block">
+        <code>{text}</code>
+      </pre>
+    </div>
   );
 }
 
@@ -38,6 +47,7 @@ export function KitOutput({ kit }: KitOutputProps) {
         <h2>┌─ Your Rescue Kit</h2>
         <nav className="kit-nav">
           <a href="#snapshot">Snapshot</a>
+          <a href="#rescue-score">Score</a>
           <a href="#positioning">Positioning</a>
           <a href="#landing-page">Landing Page</a>
           <a href="#email-sequence">Emails</a>
@@ -48,6 +58,34 @@ export function KitOutput({ kit }: KitOutputProps) {
           <a href="#risk-flags">Risks</a>
         </nav>
       </div>
+
+      <Section id="rescue-score" title="Rescue Score & Recommended Offer">
+        <div className="score-card">
+          <div className="score-number">{kit.rescueScore.score}/100</div>
+          <div>
+            <h4>{kit.rescueScore.label}</h4>
+            <p>{kit.rescueScore.recommendedOffer}</p>
+          </div>
+        </div>
+        <div className="positioning-grid">
+          <div>
+            <h4>Why this score</h4>
+            <ul>
+              {kit.rescueScore.rationale.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4>Next actions</h4>
+            <ol>
+              {kit.rescueScore.nextActions.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </Section>
 
       {/* ── Executive Snapshot ── */}
       <Section id="snapshot" title="Executive Snapshot">
