@@ -7,7 +7,7 @@ export const sampleWebinar: WebinarInput = {
     "B2B marketing managers and demand-gen leads at companies with 50-500 employees who run webinars but struggle to convert attendees into pipeline",
   speakerName: "Jordan Chen",
   speakerCredentials:
-    "VP of Marketing at Acme Growth Co, 12 years in B2B demand gen, formerly led webinar programs at two Series B SaaS companies",
+    "VP of Marketing at Acme Growth Co, 12 years in B2B demand generation, formerly led webinar programs at two Series B SaaS companies",
   companyName: "Acme Growth Co",
   painPoint:
     "Webinars get registrations but produce almost zero qualified pipeline — attendees ghost after the replay email",
@@ -22,7 +22,7 @@ export const sampleWebinar: WebinarInput = {
     "Acme Pipeline Accelerator — a done-with-you webinar optimization engagement",
   industry: "B2B SaaS",
   uniqueAngle:
-    "Live teardown of a real webinar funnel that went from 2% to 18% opportunity conversion — showing the actual emails, landing pages, and sales sequences used",
+    "Live teardown of a real webinar funnel — showing the actual emails, landing page structure, and sales sequence decisions without relying on invented performance claims",
 };
 
 export function emptyInput(): WebinarInput {

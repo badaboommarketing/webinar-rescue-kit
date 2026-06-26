@@ -90,7 +90,7 @@ export async function postWebhook(
 
 // ── Mailto fallback ─────────────────────────────────────────────────
 
-const BADA_EMAIL = "hello@badadigital.com";
+const BADA_EMAIL = "alex@bada.digital";
 
 export function buildMailtoLink(lead: LeadInfo, input: WebinarInput): string {
   const subject = encodeURIComponent(

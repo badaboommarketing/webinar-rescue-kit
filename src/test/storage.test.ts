@@ -42,7 +42,7 @@ describe("storage helpers", () => {
   it("builds a usable Bada mailto fallback", () => {
     const link = buildMailtoLink(lead, sampleWebinar);
 
-    expect(link).toContain("mailto:hello@badadigital.com");
+    expect(link).toContain("mailto:alex@bada.digital");
     expect(decodeURIComponent(link)).toContain("Webinar Rescue Kit Inquiry");
     expect(decodeURIComponent(link)).toContain("alex@example.com");
   });
