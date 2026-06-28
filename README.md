@@ -1,5 +1,9 @@
 # Webinar Rescue Kit
 
+Live demo: https://badaboommarketing.github.io/webinar-rescue-kit/
+
+Repo: https://github.com/badaboommarketing/webinar-rescue-kit
+
 A local-first web app that turns a rough webinar or event idea into a complete growth kit: positioning, landing page copy, invite emails, reminder emails, follow-up sales sequence, ad angles, production checklist, sales handoff checklist, and proof/risk flags.
 
 Built for Bada Digital's Event Lead Growth wedge. The MVP is static-deployable and does not require paid APIs.
