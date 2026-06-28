@@ -5,6 +5,7 @@ const LEADS_KEY = "wrk_leads";
 const WEBHOOK_KEY = "wrk_webhook_url";
 const RESEARCH_WEBHOOK_KEY = "wrk_research_webhook_url";
 export const DEFAULT_RESEARCH_WEBHOOK_URL = "https://badaboom.app.n8n.cloud/webhook/webinar-rescue-kit-research";
+export const DEFAULT_RESEARCH_TIMEOUT_MS = 45_000;
 
 // ── localStorage helpers ────────────────────────────────────────────
 
@@ -116,12 +117,19 @@ export interface ResearchWebhookResult {
   research?: ResearchBrief;
 }
 
-export async function postResearchWebhook(url: string, payload: unknown): Promise<ResearchWebhookResult> {
+export async function postResearchWebhook(
+  url: string,
+  payload: unknown,
+  timeoutMs = DEFAULT_RESEARCH_TIMEOUT_MS,
+): Promise<ResearchWebhookResult> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
     if (!res.ok) {
       return { ok: false, status: res.status, message: `Research workflow responded with ${res.status}` };
@@ -133,10 +141,18 @@ export async function postResearchWebhook(url: string, payload: unknown): Promis
     }
     return { ok: true, status: res.status, message: "Research brief attached", research };
   } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return {
+        ok: false,
+        message: `Research workflow timed out after ${Math.round(timeoutMs / 1000)} seconds`,
+      };
+    }
     return {
       ok: false,
       message: err instanceof Error ? err.message : "Network error",
     };
+  } finally {
+    window.clearTimeout(timeout);
   }
 }
 

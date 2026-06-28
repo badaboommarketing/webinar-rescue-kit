@@ -119,4 +119,23 @@ describe("postResearchWebhook", () => {
       expect.objectContaining({ method: "POST" }),
     );
   });
+
+  it("returns a clear timeout message when research hangs", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn((_url: string, options?: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        options?.signal?.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")));
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const resultPromise = postResearchWebhook("https://n8n.example.com/webhook/webinar-rescue-kit-research", { request: true }, 1000);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    await expect(resultPromise).resolves.toEqual({
+      ok: false,
+      message: "Research workflow timed out after 1 seconds",
+    });
+    vi.useRealTimers();
+  });
 });

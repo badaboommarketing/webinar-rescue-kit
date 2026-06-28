@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ResearchBrief, ResearchRequestInput, WebinarInput } from "../types";
 import {
   buildResearchRequestPayload,
@@ -24,6 +24,23 @@ export function ResearchPanel({ research, onResearchChange, lastInput }: Researc
   const [rawJson, setRawJson] = useState("");
   const [status, setStatus] = useState("Research layer optional, but this is what makes the output director-grade.");
   const [isLoading, setIsLoading] = useState(false);
+  const [lastHydratedKey, setLastHydratedKey] = useState("");
+
+  useEffect(() => {
+    if (!lastInput) return;
+    const next = emptyResearchRequest(lastInput);
+    const key = JSON.stringify(next);
+    if (key === lastHydratedKey) return;
+    setRequest((prev) => ({
+      companyName: prev.companyName || next.companyName,
+      companyWebsite: prev.companyWebsite || next.companyWebsite,
+      proposedTopic: prev.proposedTopic || next.proposedTopic,
+      competitorsRaw: prev.competitorsRaw || next.competitorsRaw,
+      industry: prev.industry || next.industry,
+      targetAudience: prev.targetAudience || next.targetAudience,
+    }));
+    setLastHydratedKey(key);
+  }, [lastHydratedKey, lastInput]);
 
   function set<K extends keyof ResearchRequestInput>(key: K, value: ResearchRequestInput[K]) {
     setRequest((prev) => ({ ...prev, [key]: value }));
@@ -32,6 +49,17 @@ export function ResearchPanel({ research, onResearchChange, lastInput }: Researc
   function handleWebhookSave(url: string) {
     setResearchWebhookUrl(url);
     setWebhookUrlState(url);
+  }
+
+  function handleUseWebinarValues() {
+    if (!lastInput) {
+      setStatus("Generate the webinar kit once, then the research request can inherit those values.");
+      return;
+    }
+    const next = emptyResearchRequest(lastInput);
+    setRequest(next);
+    setLastHydratedKey(JSON.stringify(next));
+    setStatus("Research request synced from the current webinar form values.");
   }
 
   function handleSampleResearch() {
@@ -86,6 +114,9 @@ export function ResearchPanel({ research, onResearchChange, lastInput }: Researc
         </div>
         <button type="button" className="btn-sample" onClick={handleSampleResearch}>
           ▶ Load Sample Research
+        </button>
+        <button type="button" className="btn-download" onClick={handleUseWebinarValues}>
+          ↻ Use Webinar Form Values
         </button>
       </div>
 
