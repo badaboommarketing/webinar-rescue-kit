@@ -17,6 +17,98 @@ export interface WebinarInput {
   uniqueAngle: string;
 }
 
+export interface ResearchRequestInput {
+  companyName: string;
+  companyWebsite: string;
+  industry: string;
+  targetAudience: string;
+  proposedTopic: string;
+  competitorsRaw: string;
+}
+
+export interface ResearchSource {
+  title: string;
+  url: string;
+  snippet?: string;
+  query?: string;
+  sourceType?: "company" | "competitor" | "event" | "market" | "other";
+}
+
+export interface CompetitorProfile {
+  name: string;
+  url?: string;
+  positioning?: string;
+  eventPatterns: string[];
+  notableHooks: string[];
+  proofClaims: string[];
+  sources: ResearchSource[];
+}
+
+export interface CompetitorEventSignal {
+  competitor: string;
+  eventName: string;
+  eventType: "webinar" | "workshop" | "virtual-event" | "demo" | "conference" | "unknown";
+  estimatedCadence: string;
+  evidence: string;
+  sourceUrl?: string;
+}
+
+export interface CompanyResearch {
+  name: string;
+  website?: string;
+  positioning?: string;
+  offers: string[];
+  audienceSignals: string[];
+  proofSignals: string[];
+  gaps: string[];
+}
+
+export interface ResearchBrief {
+  generatedAt: string;
+  company: CompanyResearch;
+  competitors: CompetitorProfile[];
+  competitorEventSignals: CompetitorEventSignal[];
+  marketPatterns: string[];
+  strategicGaps: string[];
+  sourceBackedAssumptions: string[];
+  unansweredQuestions: string[];
+  recommendedAngles: string[];
+  sources: ResearchSource[];
+  confidence: "low" | "medium" | "high";
+}
+
+export interface ResearchIntelligence {
+  status: "missing" | "attached";
+  confidence: "low" | "medium" | "high";
+  companyPositioning: string;
+  competitorEventCadence: CompetitorEventSignal[];
+  marketPatterns: string[];
+  strategicGaps: string[];
+  sourceBackedAssumptions: string[];
+  unansweredQuestions: string[];
+  sources: ResearchSource[];
+}
+
+export interface WebinarStrategy {
+  topicVerdict: string;
+  strategicThesis: string;
+  recommendedAngle: string;
+  differentiation: string;
+  formatRecommendation: string;
+  contentPillars: string[];
+  researchDrivenQuestions: string[];
+}
+
+export interface CampaignBrief {
+  oneLineBrief: string;
+  directorNotes: string[];
+  landingPageStrategy: string;
+  emailStrategy: string;
+  paidMediaStrategy: string;
+  salesFollowUpStrategy: string;
+  creativeGuardrails: string[];
+}
+
 export interface EmailContent {
   label: string;
   subject: string;
@@ -51,6 +143,9 @@ export interface Positioning {
 
 export interface GeneratedKit {
   executiveSnapshot: string;
+  researchIntelligence: ResearchIntelligence;
+  webinarStrategy: WebinarStrategy;
+  campaignBrief: CampaignBrief;
   rescueScore: RescueScore;
   positioning: Positioning;
   landingPage: LandingPageCopy;
@@ -85,6 +180,7 @@ export interface LeadInfo {
 export interface LeadPayload {
   lead: LeadInfo;
   input: WebinarInput;
+  research?: ResearchBrief | null;
   generatedAt: string;
   utm: Record<string, string>;
 }

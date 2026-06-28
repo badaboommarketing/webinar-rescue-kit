@@ -1,13 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { sampleWebinar } from "../sampleData";
+import { sampleResearchBrief } from "../research";
 import {
   buildMailtoLink,
   buildPayload,
   clearLeads,
   getWebhookUrl,
+  getResearchWebhookUrl,
   loadLeads,
+  postResearchWebhook,
   postWebhook,
   saveLead,
+  setResearchWebhookUrl,
   setWebhookUrl,
 } from "../storage";
 import type { LeadInfo } from "../types";
@@ -45,12 +49,27 @@ describe("storage helpers", () => {
     expect(getWebhookUrl()).toBe("");
   });
 
+  it("persists and removes research webhook URL settings", () => {
+    setResearchWebhookUrl("  https://n8n.example.com/webhook/webinar-rescue-kit-research  ");
+
+    expect(getResearchWebhookUrl()).toBe("https://n8n.example.com/webhook/webinar-rescue-kit-research");
+
+    setResearchWebhookUrl("   ");
+    expect(getResearchWebhookUrl()).toBe("https://badaboom.app.n8n.cloud/webhook/webinar-rescue-kit-research");
+  });
+
   it("builds a usable Bada mailto fallback", () => {
     const link = buildMailtoLink(lead, sampleWebinar);
 
     expect(link).toContain("mailto:alex@bada.digital");
     expect(decodeURIComponent(link)).toContain("Webinar Rescue Kit Inquiry");
     expect(decodeURIComponent(link)).toContain("alex@example.com");
+  });
+  it("builds a payload that can include attached research", () => {
+    const payload = buildPayload(lead, sampleWebinar, sampleResearchBrief);
+
+    expect(payload.research?.company.name).toBe(sampleResearchBrief.company.name);
+    expect(payload.research?.competitorEventSignals).toHaveLength(2);
   });
 });
 
@@ -79,5 +98,25 @@ describe("postWebhook", () => {
     const result = await postWebhook("https://n8n.example.com/webhook/webinar-rescue-kit-intake", buildPayload(lead, sampleWebinar));
 
     expect(result).toEqual({ ok: false, message: "offline" });
+  });
+});
+
+describe("postResearchWebhook", () => {
+  it("normalizes research returned by n8n", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ researchBrief: sampleResearchBrief }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await postResearchWebhook("https://n8n.example.com/webhook/webinar-rescue-kit-research", { request: true });
+
+    expect(result.ok).toBe(true);
+    expect(result.research?.company.name).toBe(sampleResearchBrief.company.name);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://n8n.example.com/webhook/webinar-rescue-kit-research",
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 });

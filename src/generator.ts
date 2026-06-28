@@ -6,7 +6,13 @@ import type {
   Positioning,
   LandingPageCopy,
   RescueScore,
+  ResearchBrief,
 } from "./types";
+import {
+  buildCampaignBrief,
+  buildResearchIntelligence,
+  buildWebinarStrategy,
+} from "./research";
 
 // ── Executive Snapshot ──────────────────────────────────────────────
 
@@ -352,7 +358,7 @@ function buildProductionChecklist(i: WebinarInput): string[] {
 
 // ── Risk Flags ──────────────────────────────────────────────────────
 
-function buildRiskFlags(i: WebinarInput): string[] {
+function buildRiskFlags(i: WebinarInput, research?: ResearchBrief | null): string[] {
   const flags: string[] = [];
 
   if (!i.uniqueAngle.trim()) {
@@ -415,6 +421,28 @@ function buildRiskFlags(i: WebinarInput): string[] {
     );
   }
 
+  if (!research) {
+    flags.push(
+      "NO RESEARCH LAYER — This kit is generated from the user's self-reported inputs only. Run the n8n research workflow or paste a structured research brief before using the campaign for paid traffic.",
+    );
+  } else {
+    if (research.confidence === "low") {
+      flags.push(
+        "LOW RESEARCH CONFIDENCE — The attached research brief has low confidence. Verify company positioning, competitors, and event cadence before finalizing the campaign.",
+      );
+    }
+    if (research.sources.length < 3) {
+      flags.push(
+        "THIN SOURCE BASE — Fewer than 3 sources are attached. A marketing director will need stronger source coverage before approving claims.",
+      );
+    }
+    if (research.competitorEventSignals.length === 0) {
+      flags.push(
+        "NO COMPETITOR EVENT SIGNALS — Research did not return competitor webinar/workshop/event patterns. Event cadence and differentiation still need manual validation.",
+      );
+    }
+  }
+
   // Always add proof flag
   flags.push(
     "SOCIAL PROOF NEEDED — Landing page and ads will perform significantly better with real testimonials, client logos, prior attendance numbers, or specific results. Do not fabricate these — collect them before launch.",
@@ -425,7 +453,7 @@ function buildRiskFlags(i: WebinarInput): string[] {
 
 // ── Rescue Score ─────────────────────────────────────────────────────
 
-function buildRescueScore(i: WebinarInput, riskFlags: string[]): RescueScore {
+function buildRescueScore(i: WebinarInput, riskFlags: string[], research?: ResearchBrief | null): RescueScore {
   let score = 100;
   const rationale: string[] = [];
 
@@ -438,6 +466,9 @@ function buildRescueScore(i: WebinarInput, riskFlags: string[]): RescueScore {
     [!i.painPoint.trim(), 15, "The core pain point is unclear."],
     [i.targetAudience.trim().split(" ").length < 5, 10, "The audience definition is still too broad."],
     [i.mainPromise.trim().split(" ").length < 5, 10, "The promise needs a sharper outcome."],
+    [!research, 12, "No research intelligence is attached yet."],
+    [research?.confidence === "low", 8, "Research confidence is low; source-backed claims need verification."],
+    [!!research && research.competitorEventSignals.length === 0, 8, "No competitor event cadence was found."],
   ];
 
   for (const [condition, points, reason] of deductions) {
@@ -484,12 +515,15 @@ function buildRescueScore(i: WebinarInput, riskFlags: string[]): RescueScore {
 
 // ── Main Generator ──────────────────────────────────────────────────
 
-export function generateKit(input: WebinarInput): GeneratedKit {
-  const riskFlags = buildRiskFlags(input);
+export function generateKit(input: WebinarInput, research?: ResearchBrief | null): GeneratedKit {
+  const riskFlags = buildRiskFlags(input, research);
 
   return {
     executiveSnapshot: buildSnapshot(input),
-    rescueScore: buildRescueScore(input, riskFlags),
+    researchIntelligence: buildResearchIntelligence(input, research),
+    webinarStrategy: buildWebinarStrategy(input, research),
+    campaignBrief: buildCampaignBrief(input, research),
+    rescueScore: buildRescueScore(input, riskFlags, research),
     positioning: buildPositioning(input),
     landingPage: buildLandingPage(input),
     emailSequence: buildEmailSequence(input),

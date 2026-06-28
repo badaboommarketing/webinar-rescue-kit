@@ -46,6 +46,9 @@ export function KitOutput({ kit }: KitOutputProps) {
       <div className="kit-header">
         <h2>┌─ Your Rescue Kit</h2>
         <nav className="kit-nav">
+          <a href="#research">Research</a>
+          <a href="#strategy">Strategy</a>
+          <a href="#campaign-brief">Brief</a>
           <a href="#snapshot">Snapshot</a>
           <a href="#rescue-score">Score</a>
           <a href="#positioning">Positioning</a>
@@ -58,6 +61,112 @@ export function KitOutput({ kit }: KitOutputProps) {
           <a href="#risk-flags">Risks</a>
         </nav>
       </div>
+
+      <Section id="research" title="Research Intelligence">
+        <div className="score-card">
+          <div className="score-number">{kit.researchIntelligence.confidence.toUpperCase()}</div>
+          <div>
+            <h4>{kit.researchIntelligence.status === "attached" ? "Research attached" : "Research missing"}</h4>
+            <p>{kit.researchIntelligence.companyPositioning}</p>
+          </div>
+        </div>
+        <div className="positioning-grid">
+          <div>
+            <h4>Market patterns</h4>
+            <ul>
+              {kit.researchIntelligence.marketPatterns.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4>Strategic gaps</h4>
+            <ul>
+              {kit.researchIntelligence.strategicGaps.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <h4>Competitor event cadence</h4>
+        {kit.researchIntelligence.competitorEventCadence.length ? (
+          <div className="event-signal-grid">
+            {kit.researchIntelligence.competitorEventCadence.map((signal, i) => (
+              <div className="event-signal-card" key={i}>
+                <strong>{signal.competitor}</strong>
+                <span>{signal.eventName}</span>
+                <small>{signal.eventType} · {signal.estimatedCadence}</small>
+                <p>{signal.evidence}</p>
+                {signal.sourceUrl && <a href={signal.sourceUrl} target="_blank" rel="noreferrer">Source</a>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="flag-text">No competitor event signals attached yet. Run n8n research before approving paid traffic.</p>
+        )}
+        {kit.researchIntelligence.sources.length > 0 && (
+          <details className="source-list">
+            <summary>Sources ({kit.researchIntelligence.sources.length})</summary>
+            <ul>
+              {kit.researchIntelligence.sources.map((source, i) => (
+                <li key={i}>
+                  <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a>
+                  {source.snippet && <span> — {source.snippet}</span>}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </Section>
+
+      <Section id="strategy" title="Webinar Strategy">
+        <div className="landing-preview">
+          <div className="lp-headline">{kit.webinarStrategy.recommendedAngle}</div>
+          <div className="lp-subheadline">{kit.webinarStrategy.strategicThesis}</div>
+          <p><strong>Verdict:</strong> {kit.webinarStrategy.topicVerdict}</p>
+          <p><strong>Differentiation:</strong> {kit.webinarStrategy.differentiation}</p>
+          <p><strong>Format:</strong> {kit.webinarStrategy.formatRecommendation}</p>
+          <h4>Content pillars</h4>
+          <ul className="lp-bullets">
+            {kit.webinarStrategy.contentPillars.map((pillar, i) => (
+              <li key={i}>✓ {pillar}</li>
+            ))}
+          </ul>
+        </div>
+      </Section>
+
+      <Section id="campaign-brief" title="Marketing Director Campaign Brief">
+        <div className="positioning-grid">
+          <div>
+            <h4>One-line brief</h4>
+            <p>{kit.campaignBrief.oneLineBrief}</p>
+          </div>
+          <div>
+            <h4>Director notes</h4>
+            <ul>
+              {kit.campaignBrief.directorNotes.map((note, i) => (
+                <li key={i}>{note}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4>Landing page strategy</h4>
+            <p>{kit.campaignBrief.landingPageStrategy}</p>
+          </div>
+          <div>
+            <h4>Email strategy</h4>
+            <p>{kit.campaignBrief.emailStrategy}</p>
+          </div>
+          <div>
+            <h4>Paid media strategy</h4>
+            <p>{kit.campaignBrief.paidMediaStrategy}</p>
+          </div>
+          <div>
+            <h4>Sales follow-up</h4>
+            <p>{kit.campaignBrief.salesFollowUpStrategy}</p>
+          </div>
+        </div>
+      </Section>
 
       <Section id="rescue-score" title="Rescue Score & Recommended Offer">
         <div className="score-card">

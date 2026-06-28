@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { generateKit } from "../generator";
 import { sampleWebinar } from "../sampleData";
+import { sampleResearchBrief } from "../research";
 
 const requiredSections = [
   "executiveSnapshot",
+  "researchIntelligence",
+  "webinarStrategy",
+  "campaignBrief",
   "positioning",
   "landingPage",
   "emailSequence",
@@ -43,5 +47,15 @@ describe("generateKit", () => {
 
     expect(kit.positioning.differentiation).toContain("[MISSING]");
     expect(kit.riskFlags.some((flag) => flag.includes("NO UNIQUE ANGLE"))).toBe(true);
+  });
+
+  it("uses attached research to create director-grade strategy sections", () => {
+    const kit = generateKit(sampleWebinar, sampleResearchBrief);
+
+    expect(kit.researchIntelligence.status).toBe("attached");
+    expect(kit.researchIntelligence.competitorEventCadence).toHaveLength(2);
+    expect(kit.webinarStrategy.strategicThesis).toContain(sampleWebinar.companyName);
+    expect(kit.campaignBrief.directorNotes.some((note) => note.includes("Research attached"))).toBe(true);
+    expect(kit.riskFlags.some((flag) => flag.includes("NO RESEARCH LAYER"))).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { WebinarInput, GeneratedKit, LeadInfo } from "../types";
+import type { WebinarInput, GeneratedKit, LeadInfo, ResearchBrief } from "../types";
 import {
   saveLead,
   downloadJson,
@@ -14,6 +14,7 @@ import {
 interface LeadCaptureProps {
   input: WebinarInput;
   kit: GeneratedKit;
+  research?: ResearchBrief | null;
 }
 
 const emptyLead: LeadInfo = {
@@ -28,7 +29,7 @@ const emptyLead: LeadInfo = {
   consent: false,
 };
 
-export function LeadCapture({ input, kit }: LeadCaptureProps) {
+export function LeadCapture({ input, kit, research }: LeadCaptureProps) {
   const [lead, setLead] = useState<LeadInfo>(emptyLead);
   const [status, setStatus] = useState<string>("");
   const [capturedPayload, setCapturedPayload] = useState<ReturnType<typeof buildPayload> | null>(null);
@@ -63,7 +64,7 @@ export function LeadCapture({ input, kit }: LeadCaptureProps) {
       return;
     }
 
-    const payload = buildPayload(lead, input);
+    const payload = buildPayload(lead, input, research);
     saveLead(payload);
     setCapturedPayload(payload);
 

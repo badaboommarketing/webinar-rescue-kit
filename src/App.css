@@ -112,6 +112,90 @@
 
 /* ── Form ────────────────────────────────────────────────────────── */
 
+.panel-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.research-panel {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 2px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-alt), var(--bg));
+}
+
+.btn-research {
+  margin-top: 0.5rem;
+}
+
+.btn-research:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.inline-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.inline-actions .btn-download {
+  width: auto;
+}
+
+.research-status {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--border-light);
+  background: var(--bg-alt);
+  padding: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.research-status-ready {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.event-signal-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.event-signal-card {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--border-light);
+  background: var(--bg-alt);
+  padding: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.event-signal-card small {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.source-list {
+  border: 1px solid var(--border-light);
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-alt);
+  font-size: 0.85rem;
+}
+
+.source-list summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.source-list ul {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
 .wrk-form {
   margin-bottom: 2rem;
 }

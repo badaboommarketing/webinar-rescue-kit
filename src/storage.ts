@@ -1,7 +1,10 @@
-import type { LeadPayload, LeadInfo, WebinarInput, GeneratedKit } from "./types";
+import type { LeadPayload, LeadInfo, WebinarInput, GeneratedKit, ResearchBrief } from "./types";
+import { normalizeResearchBrief } from "./research";
 
 const LEADS_KEY = "wrk_leads";
 const WEBHOOK_KEY = "wrk_webhook_url";
+const RESEARCH_WEBHOOK_KEY = "wrk_research_webhook_url";
+export const DEFAULT_RESEARCH_WEBHOOK_URL = "https://badaboom.app.n8n.cloud/webhook/webinar-rescue-kit-research";
 
 // ── localStorage helpers ────────────────────────────────────────────
 
@@ -35,6 +38,18 @@ export function setWebhookUrl(url: string): void {
     localStorage.setItem(WEBHOOK_KEY, url.trim());
   } else {
     localStorage.removeItem(WEBHOOK_KEY);
+  }
+}
+
+export function getResearchWebhookUrl(): string {
+  return localStorage.getItem(RESEARCH_WEBHOOK_KEY) ?? DEFAULT_RESEARCH_WEBHOOK_URL;
+}
+
+export function setResearchWebhookUrl(url: string): void {
+  if (url.trim()) {
+    localStorage.setItem(RESEARCH_WEBHOOK_KEY, url.trim());
+  } else {
+    localStorage.removeItem(RESEARCH_WEBHOOK_KEY);
   }
 }
 
@@ -94,6 +109,37 @@ export async function postWebhook(
   }
 }
 
+export interface ResearchWebhookResult {
+  ok: boolean;
+  status?: number;
+  message: string;
+  research?: ResearchBrief;
+}
+
+export async function postResearchWebhook(url: string, payload: unknown): Promise<ResearchWebhookResult> {
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      return { ok: false, status: res.status, message: `Research workflow responded with ${res.status}` };
+    }
+    const data = await res.json();
+    const research = normalizeResearchBrief(data);
+    if (!research) {
+      return { ok: false, status: res.status, message: "Research workflow returned JSON, but not a valid research brief" };
+    }
+    return { ok: true, status: res.status, message: "Research brief attached", research };
+  } catch (err) {
+    return {
+      ok: false,
+      message: err instanceof Error ? err.message : "Network error",
+    };
+  }
+}
+
 // ── Mailto fallback ─────────────────────────────────────────────────
 
 const BADA_EMAIL = "alex@bada.digital";
@@ -126,10 +172,11 @@ export function buildMailtoLink(lead: LeadInfo, input: WebinarInput): string {
 
 // ── Build payload helper ────────────────────────────────────────────
 
-export function buildPayload(lead: LeadInfo, input: WebinarInput): LeadPayload {
+export function buildPayload(lead: LeadInfo, input: WebinarInput, research?: ResearchBrief | null): LeadPayload {
   return {
     lead,
     input,
+    research: research ?? null,
     generatedAt: new Date().toISOString(),
     utm: getUtmParams(),
   };
@@ -161,6 +208,54 @@ export function buildMarkdownKit(input: WebinarInput, kit: GeneratedKit): string
     .join("\n\n");
 
   return `# ${input.title} — Webinar Rescue Kit
+
+## Research Intelligence
+Status: ${kit.researchIntelligence.status}
+Confidence: ${kit.researchIntelligence.confidence}
+
+Company positioning: ${kit.researchIntelligence.companyPositioning}
+
+### Market Patterns
+${kit.researchIntelligence.marketPatterns.map((item) => `- ${item}`).join("\n")}
+
+### Strategic Gaps
+${kit.researchIntelligence.strategicGaps.map((item) => `- ${item}`).join("\n")}
+
+### Competitor Event Signals
+${kit.researchIntelligence.competitorEventCadence
+  .map((signal) => `- ${signal.competitor}: ${signal.eventName} (${signal.eventType}) — ${signal.estimatedCadence}. ${signal.evidence}${signal.sourceUrl ? ` Source: ${signal.sourceUrl}` : ""}`)
+  .join("\n") || "- No competitor event signals attached."}
+
+## Webinar Strategy
+Verdict: ${kit.webinarStrategy.topicVerdict}
+
+Strategic thesis: ${kit.webinarStrategy.strategicThesis}
+
+Recommended angle: ${kit.webinarStrategy.recommendedAngle}
+
+Differentiation: ${kit.webinarStrategy.differentiation}
+
+Format recommendation: ${kit.webinarStrategy.formatRecommendation}
+
+### Content Pillars
+${kit.webinarStrategy.contentPillars.map((item) => `- ${item}`).join("\n")}
+
+## Campaign Brief
+${kit.campaignBrief.oneLineBrief}
+
+### Director Notes
+${kit.campaignBrief.directorNotes.map((item) => `- ${item}`).join("\n")}
+
+Landing page strategy: ${kit.campaignBrief.landingPageStrategy}
+
+Email strategy: ${kit.campaignBrief.emailStrategy}
+
+Paid media strategy: ${kit.campaignBrief.paidMediaStrategy}
+
+Sales follow-up strategy: ${kit.campaignBrief.salesFollowUpStrategy}
+
+### Creative Guardrails
+${kit.campaignBrief.creativeGuardrails.map((item) => `- ${item}`).join("\n")}
 
 ## Rescue Score
 ${kit.rescueScore.score}/100 — ${kit.rescueScore.label}
